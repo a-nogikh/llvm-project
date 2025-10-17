@@ -8,11 +8,16 @@ void * malloc(size_t) __attribute((malloc));
 
 int no_vars __attribute((malloc)); // expected-warning {{attribute only applies to functions}}
 
-void  returns_void  (void) __attribute((malloc)); // expected-warning {{attribute only applies to return values that are pointers}}
-int   returns_int   (void) __attribute((malloc)); // expected-warning {{attribute only applies to return values that are pointers}}
+void  returns_void  (void) __attribute((malloc)); // expected-warning {{attribute only applies to return values that are pointers or structs with first field being a pointer}}
+int   returns_int   (void) __attribute((malloc)); // expected-warning {{attribute only applies to return values that are pointers or structs with first field being a pointer}}
 int * returns_intptr(void) __attribute((malloc)); // no-warning
 typedef int * iptr;
 iptr  returns_iptr  (void) __attribute((malloc)); // no-warning
+typedef struct {
+  void *ptr;
+  size_t n;
+} sized_ptr;
+sized_ptr  returns_sized_ptr  (void) __attribute((malloc)); // no-warning
 
 __attribute((malloc)) void *(*f)(void); //  expected-warning{{attribute only applies to functions}}
 __attribute((malloc)) int (*g)(void); // expected-warning{{attribute only applies to functions}}

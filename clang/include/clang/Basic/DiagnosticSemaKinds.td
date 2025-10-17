@@ -3449,6 +3449,9 @@ def err_attribute_integers_only : Error<
 def warn_attribute_return_pointers_only : Warning<
   "%0 attribute only applies to return values that are pointers">,
   InGroup<IgnoredAttributes>;
+def warn_attribute_return_pointers_or_structs : Warning<
+  "%0 attribute only applies to return values that are pointers or structs with first field being a pointer">,
+  InGroup<IgnoredAttributes>;
 def warn_attribute_return_pointers_refs_only : Warning<
   "%0 attribute only applies to return values that are pointers or references">,
   InGroup<IgnoredAttributes>;

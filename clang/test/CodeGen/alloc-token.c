@@ -11,6 +11,11 @@ void *memalign(size_t alignment, size_t size) __attribute__((malloc));
 void *valloc(size_t size) __attribute__((malloc));
 void *pvalloc(size_t size) __attribute__((malloc));
 int posix_memalign(void **memptr, size_t alignment, size_t size);
+typedef struct {
+  void *p;
+  int size;
+} sized_ptr;
+sized_ptr size_returning_malloc(size_t size) __attribute__((malloc));
 
 void *sink;
 
@@ -24,6 +29,7 @@ void *sink;
 // CHECK: call noalias ptr @valloc(i64 noundef 4), !alloc_token [[META_INT]]
 // CHECK: call noalias ptr @pvalloc(i64 noundef 4), !alloc_token [[META_INT]]
 // CHECK: call i32 @posix_memalign(ptr noundef @sink, i64 noundef 64, i64 noundef 4)
+// CHECK: call { ptr, i32 } @size_returning_malloc(i64 noundef 4), !alloc_token [[META_INT]]
 void test_malloc_like() {
   sink = malloc(sizeof(int));
   sink = calloc(3, sizeof(int));
@@ -34,6 +40,7 @@ void test_malloc_like() {
   sink = valloc(sizeof(int));
   sink = pvalloc(sizeof(int));
   posix_memalign(&sink, 64, sizeof(int)); // FIXME: support posix_memalign
+  sized_ptr sized_sink = size_returning_malloc(sizeof(int));
 }
 
 // CHECK: [[META_INT]] = !{!"int", i1 false}

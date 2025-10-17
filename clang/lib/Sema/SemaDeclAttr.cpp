@@ -571,8 +571,8 @@ static void handleAllocSizeAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
   assert(isFuncOrMethodForAttrSubject(D) && hasFunctionProto(D));
 
   QualType RetTy = getFunctionOrMethodResultType(D);
-  if (!RetTy->isPointerType()) {
-    S.Diag(AL.getLoc(), diag::warn_attribute_return_pointers_only) << AL;
+  if (!RetTy->isPointerType() && !RetTy->isPointerWrapperStruct()) {
+    S.Diag(AL.getLoc(), diag::warn_attribute_return_pointers_or_structs) << AL;
     return;
   }
 
@@ -1750,8 +1750,10 @@ static void handleTLSModelAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
 
 static void handleRestrictAttr(Sema &S, Decl *D, const ParsedAttr &AL) {
   QualType ResultType = getFunctionOrMethodResultType(D);
-  if (!ResultType->isAnyPointerType() && !ResultType->isBlockPointerType()) {
-    S.Diag(AL.getLoc(), diag::warn_attribute_return_pointers_only)
+  if (!ResultType->isAnyPointerType() &&
+      !ResultType->isBlockPointerType() &&
+      !ResultType->isPointerWrapperStruct()) {
+    S.Diag(AL.getLoc(), diag::warn_attribute_return_pointers_or_structs)
         << AL << getFunctionOrMethodResultSourceRange(D);
     return;
   }

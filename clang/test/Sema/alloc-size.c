@@ -12,7 +12,7 @@ void *fail6(int a, int b) __attribute__((alloc_size(3, 1))); //expected-error{{'
 void *fail7(int a, int b) __attribute__((alloc_size(1, 0))); //expected-error{{'alloc_size' attribute parameter 2 is out of bounds}}
 void *fail8(int a, int b) __attribute__((alloc_size(1, 3))); //expected-error{{'alloc_size' attribute parameter 2 is out of bounds}}
 
-int fail9(int a) __attribute__((alloc_size(1))); //expected-warning{{'alloc_size' attribute only applies to return values that are pointers}}
+int fail9(int a) __attribute__((alloc_size(1))); //expected-warning{{'alloc_size' attribute only applies to return values that are pointers or structs with first field being a pointer}}
 
 int fail10 __attribute__((alloc_size(1))); //expected-warning{{'alloc_size' attribute only applies to non-K&R-style functions}}
 
@@ -29,6 +29,14 @@ void *KR() __attribute__((alloc_size(1))); //expected-warning{{'alloc_size' attr
 // Applying alloc_size to function pointers should work:
 void *(__attribute__((alloc_size(1))) * func_ptr1)(int);
 void *(__attribute__((alloc_size(1, 2))) func_ptr2)(int, int);
+
+// Applying alloc_size to functions returning a struct with a pointer as a first field should work.
+typedef struct {
+  void* p;
+  int n;
+} sized_ptr;
+
+sized_ptr sized_ptr_alloc(int len) __attribute__((alloc_size(1)));
 
 // TODO: according to GCC documentation the following should actually be the type
 // “pointer to pointer to alloc_size attributed function returning void*” and should

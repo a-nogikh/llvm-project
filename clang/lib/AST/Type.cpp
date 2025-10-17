@@ -5755,3 +5755,19 @@ StringRef PredefinedSugarType::getName(Kind KD) {
   }
   llvm_unreachable("unexpected kind");
 }
+
+
+bool Type::isPointerWrapperStruct() const {
+  // Check that the type is a plain record with the first field being a pointer type.
+  // This matches the definition of sized_allocation_t in P0901R11.
+  const RecordDecl *RD = getAsRecordDecl();
+  if (!RD || RD->isUnion())
+    return false;
+  const RecordDecl *Def = RD->getDefinition();
+  if (!Def)
+    return false; // This is an incomplete type.
+  if (Def->field_empty())
+    return false;
+  const FieldDecl *FirstField = *Def->field_begin();
+  return FirstField->getType()->isAnyPointerType();
+}
