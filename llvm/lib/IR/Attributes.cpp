@@ -701,6 +701,10 @@ std::string Attribute::getAsString(bool InAttrGrp) const {
     return Result;
   }
 
+  if (hasAttribute(Attribute::ReturnsNoAliasField)) {
+    return ("returns_noalias_field(" + Twine(getValueAsInt()) + ")").str();
+  }
+
   // Convert target-dependent attributes to strings of the form:
   //
   //   "kind"
@@ -2254,6 +2258,10 @@ AttrBuilder &AttrBuilder::addNoFPClassAttr(FPClassTest Mask) {
 
 AttrBuilder &AttrBuilder::addAllocKindAttr(AllocFnKind Kind) {
   return addRawIntAttr(Attribute::AllocKind, static_cast<uint64_t>(Kind));
+}
+
+AttrBuilder &AttrBuilder::addReturnsNoAliasField(uint64_t Field) {
+  return addRawIntAttr(Attribute::ReturnsNoAliasField, Field);
 }
 
 Type *AttrBuilder::getTypeAttr(Attribute::AttrKind Kind) const {

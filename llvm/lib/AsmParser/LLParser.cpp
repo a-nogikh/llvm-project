@@ -1656,6 +1656,12 @@ bool LLParser::parseEnumAttribute(Attribute::AttrKind Attr, AttrBuilder &B,
     return parseInitializesAttr(B);
   case Attribute::Captures:
     return parseCapturesAttr(B);
+  case Attribute::ReturnsNoAliasField:
+    unsigned Field;
+    if (parseReturnsNoAliasFieldArguments(Field))
+      return true;
+    B.addReturnsNoAliasField(Field);
+    return false;
   default:
     B.addAttribute(Attr);
     Lex.Lex();
@@ -2757,6 +2763,19 @@ bool LLParser::parseOptionalCommaAddrSpace(unsigned &AddrSpace, LocTy &Loc,
       return true;
   }
 
+  return false;
+}
+
+bool LLParser::parseReturnsNoAliasFieldArguments(unsigned &Field) {
+  Lex.Lex();
+  LocTy ParenLoc = Lex.getLoc();
+  if (!EatIfPresent(lltok::lparen))
+    return error(ParenLoc, "expected '('");
+  if (parseUInt32(Field))
+    return true;
+  auto EndParen = Lex.getLoc();
+  if (!EatIfPresent(lltok::rparen))
+    return error(EndParen, "expected ')'");
   return false;
 }
 

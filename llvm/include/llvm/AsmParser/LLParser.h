@@ -335,6 +335,7 @@ namespace llvm {
     bool parseAllocSizeArguments(unsigned &BaseSizeArg,
                                  std::optional<unsigned> &HowManyArg);
     bool parseVScaleRangeArguments(unsigned &MinValue, unsigned &MaxValue);
+    bool parseReturnsNoAliasFieldArguments(unsigned &Field);
     bool parseIndexList(SmallVectorImpl<unsigned> &Indices,
                         bool &AteExtraComma);
     bool parseIndexList(SmallVectorImpl<unsigned> &Indices) {

@@ -582,6 +582,15 @@ define void @dead_on_return(ptr dead_on_return %p) {
   ret void
 }
 
+%spanT = type { ptr, i32 }
+
+; CHECK: define %spanT @returns_noalias_field() #60
+define %spanT @returns_noalias_field() returns_noalias_field(0) #60
+{
+ ret %spanT zeroinitializer
+}
+
+
 ; CHECK: attributes #0 = { noreturn }
 ; CHECK: attributes #1 = { nounwind }
 ; CHECK: attributes #2 = { memory(none) }
@@ -643,4 +652,5 @@ define void @dead_on_return(ptr dead_on_return %p) {
 ; CHECK: attributes [[SKIPPROFILE]] = { skipprofile }
 ; CHECK: attributes [[OPTDEBUG]] = { optdebug }
 ; CHECK: attributes [[NODIVERGENCESOURCE]] = { nodivergencesource }
+; CHECK: attributes #60 = { returns_noalias_field(0) }
 ; CHECK: attributes #[[NOBUILTIN]] = { nobuiltin }

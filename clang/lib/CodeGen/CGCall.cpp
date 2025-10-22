@@ -2507,8 +2507,15 @@ void CodeGenModule::ConstructAttributeList(StringRef Name,
       FuncAttrs.addAttribute(llvm::Attribute::NoUnwind);
     }
     if (const auto *RA = TargetDecl->getAttr<RestrictAttr>();
-        RA && RA->getDeallocator() == nullptr)
-      RetAttrs.addAttribute(llvm::Attribute::NoAlias);
+        RA && RA->getDeallocator() == nullptr) {
+             RetAttrs.addAttribute(llvm::Attribute::NoAlias);
+    }
+    if (const auto *RA = TargetDecl->getAttr<MallocSpanAttr>(); RA) {
+        // std::span like type is assumed to hold a pointer in the first
+        // argument.
+        // TODO: we must pick the first pointer field.
+        FuncAttrs.addRawIntAttr(llvm::Attribute::ReturnsNoAliasField, 0);
+    }
     if (TargetDecl->hasAttr<ReturnsNonNullAttr>() &&
         !CodeGenOpts.NullPointerIsValid)
       RetAttrs.addAttribute(llvm::Attribute::NonNull);
