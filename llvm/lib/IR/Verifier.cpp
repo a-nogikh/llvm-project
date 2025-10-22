@@ -664,6 +664,8 @@ private:
 
   /// Verify the llvm.experimental.noalias.scope.decl declarations
   void verifyNoAliasScopeDecl();
+
+  void verifyReturnsNoAliasField(const Function &F);
 };
 
 } // end anonymous namespace
@@ -2971,6 +2973,8 @@ void Verifier::visitFunction(const Function &F) {
   if (Attrs.hasFnAttr(Attribute::Naked))
     for (const Argument &Arg : F.args())
       Check(Arg.use_empty(), "cannot use argument of naked function", &Arg);
+
+  verifyReturnsNoAliasField(F);
 
   // Check that this function meets the restrictions on this calling convention.
   // Sometimes varargs is used for perfectly forwarding thunks, so some of these
@@ -7588,6 +7592,39 @@ void Verifier::verifyNoAliasScopeDecl() {
                   "with the same scope",
                   I);
     ItCurrent = ItNext;
+  }
+}
+
+void Verifier::verifyReturnsNoAliasField(const Function &F) {
+  if (!F.hasFnAttribute("returns_noalias_field"))
+    return;
+
+  Attribute A = F.getFnAttribute("returns_noalias_field");
+  if (!F.getReturnType()->isStructTy()) {
+    CheckFailed(
+        "returns_noalias_field attribute requires function to return a struct",
+        &F);
+    return;
+  }
+
+  StructType *RetTy = cast<StructType>(F.getReturnType());
+  unsigned Idx;
+  if (A.getValueAsString().getAsInteger(10, Idx)) {
+    CheckFailed(
+        "returns_noalias_field attribute requires a valid integer value", &F);
+    return;
+  }
+
+  if (Idx >= RetTy->getNumElements()) {
+    CheckFailed("returns_noalias_field index is out of bounds for return type",
+                RetTy, &F);
+    return;
+  }
+  if (!RetTy->getElementType(Idx)->isPointerTy()) {
+    CheckFailed(
+        "returns_noalias_field index must refer to a pointer type field",
+        RetTy->getElementType(Idx), &F);
+    return;
   }
 }
 

@@ -174,6 +174,11 @@ def Nest : EnumAttr<"nest", IntersectPreserve, [ParamAttr]>;
 /// Considered to not alias after call.
 def NoAlias : EnumAttr<"noalias", IntersectAnd, [ParamAttr, RetAttr]>;
 
+/// The i-th attribute of the returned struct is considered to not alias after
+/// call.
+def ReturnsNoAliasField : EnumAttr<"returns_noalias_field",
+                                   IntersectAnd, [FnAttr, ParamAttr, RetAttr]>;
+
 /// Callee isn't recognized as a builtin.
 def NoBuiltin : EnumAttr<"nobuiltin", IntersectPreserve, [FnAttr]>;
 

@@ -834,6 +834,26 @@ static bool isNoAliasOrByValArgument(const Value *V) {
   return false;
 }
 
+static bool isFromNoAliasField(const Value *V) {
+  // If the value comes from a malloc-annotated function that returns a struct
+  // with a pointer, the pointer is assumed to be nonaliasing.
+  const ExtractValueInst *EVI = dyn_cast<ExtractValueInst>(V);
+  if (!EVI || EVI->getNumIndices() != 1)
+    return false;
+  const CallBase *CB = dyn_cast<CallBase>(EVI->getAggregateOperand());
+  if (!CB)
+    return false;
+  Attribute A = CB->getFnAttr("returns_noalias_field");
+  if (A.isValid()) {
+    unsigned AttrIdx;
+    if (!A.getValueAsString().getAsInteger(10, AttrIdx)) {
+      if (EVI->getIndices()[0] == AttrIdx)
+        return true;
+    }
+  }
+  return false;
+}
+
 bool llvm::isIdentifiedObject(const Value *V) {
   if (isa<AllocaInst>(V))
     return true;
@@ -843,11 +863,14 @@ bool llvm::isIdentifiedObject(const Value *V) {
     return true;
   if (isNoAliasOrByValArgument(V))
     return true;
+  if (isFromNoAliasField(V))
+    return true;
   return false;
 }
 
 bool llvm::isIdentifiedFunctionLocal(const Value *V) {
-  return isa<AllocaInst>(V) || isNoAliasCall(V) || isNoAliasOrByValArgument(V);
+  return isa<AllocaInst>(V) || isNoAliasCall(V) ||
+         isNoAliasOrByValArgument(V) || isFromNoAliasField(V);
 }
 
 bool llvm::isBaseOfObject(const Value *V) {
