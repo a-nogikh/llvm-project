@@ -1289,6 +1289,9 @@ public:
   // This turns the allocator kind into the form used internally in Attribute.
   LLVM_ABI AttrBuilder &addAllocKindAttr(AllocFnKind Kind);
 
+  // Add returns_noalias_field attribute.
+  LLVM_ABI AttrBuilder &addReturnsNoAliasField(uint64_t Field);
+
   /// Add memory effect attribute.
   LLVM_ABI AttrBuilder &addMemoryAttr(MemoryEffects ME);
 
